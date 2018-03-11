@@ -22,25 +22,32 @@ Y = ['male', 'female', 'female', 'female', 'male', 'male',
      'male', 'female', 'male', 'female']
 
 # Split data into train and test data
-X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size= .2) 
+X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size= .5) 
 
 # define classifiers using dictionary
-classifier = {'Tree':tree.DecisionTreeClassifier(), 'KNN':KNeighborsClassifier(), 
-              'NN':MLPClassifier()}
+classifier = {'Tree':[tree.DecisionTreeClassifier()], 'KNN':[KNeighborsClassifier()], 
+              'NN':[MLPClassifier()]}
 
 # train classifiers on train data
 for clf in classifier:
-    classifier[clf].fit(X_train,Y_train)
+    classifier[clf][0].fit(X_train,Y_train)
 
-# Test the classifiers using test data
-def predict(data, label):
-    for clf in classifier:
-        counter = 0
-        pred = classifier[clf].predict(data)
-        for i in range(len(label)):
-            if pred[i] == label[i]:
-                counter+=1
-        print ('%s: accuracy = %f'%(clf,counter/len(data)))
+# Predict new data using the trained classifiers
+def predict(clf, data):
+    return classifier[clf][0].predict(data)
 
-predict(X_test, Y_test)
+# Compare the 3 SciKit-learn Models     
+for clf in classifier:
+    pred = predict(clf, X_test)
+    match = np.where(np.array(pred)==np.array(Y_test))
+    accuracy = len(match[0])/len(X_test)
+    classifier[clf].append(accuracy) # append accuracy to dictionary 
+    print ('%s: accuracy = %f'%(clf,accuracy))
 
+# find best model
+score = 0 
+key = None
+for clf in classifier:
+    if classifier[clf][1] > score: 
+        score, key= classifier[clf][1], clf    
+print ('Best model is %s'%(key))
